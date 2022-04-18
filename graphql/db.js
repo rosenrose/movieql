@@ -105,10 +105,12 @@ export const getItem = (id) =>
     });
 
 function extractInfo(item) {
+  const { title, description, thumbnails } = item.snippet;
+
   return {
-    title: item.snippet.title,
-    description: item.snippet.description,
+    title,
+    description,
     date: item.snippet.publishedAt,
-    thumbnail: item.snippet.thumbnails[Object.keys(item.snippet.thumbnails).at(-1)].url,
+    thumbnail: thumbnails[Object.keys(thumbnails).at(-1)].url,
   };
 }
