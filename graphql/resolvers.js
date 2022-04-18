@@ -3,7 +3,7 @@ import { people } from "./db";
 const resolvers = {
   Query: {
     people: () => people,
-    person: (id) => people.find((person) => person.id == id),
+    person: (_, { id }) => people.find((person) => person.id == id),
   },
 };
 
