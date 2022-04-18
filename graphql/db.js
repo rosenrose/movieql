@@ -105,12 +105,12 @@ export const getItem = async (id) => {
 };
 
 function extractInfo(item) {
-  const { title, description, thumbnails } = item.snippet;
+  const { title, description, publishedAt: date, thumbnails } = item.snippet;
 
   return {
     title,
     description,
-    date: item.snippet.publishedAt,
+    date,
     thumbnail: thumbnails[Object.keys(thumbnails).at(-1)].url,
   };
 }
