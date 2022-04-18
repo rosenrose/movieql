@@ -1,3 +1,6 @@
+import "dotenv/config";
+import axios from "axios";
+
 export const people = [
   {
     id: 0,
@@ -63,3 +66,49 @@ export const deleteMovie = (id) => {
     return true;
   }
 };
+
+const id = "UUyWiQldYO_-yeLJC0j5oq2g";
+const ITEMS_URL = `https://www.googleapis.com/youtube/v3/playlistItems?playlistId=${id}&key=${process.env.API_KEY}&part=snippet,contentDetails`;
+const ITEM_URL = `https://www.googleapis.com/youtube/v3/videos?key=${process.env.API_KEY}&part=snippet,contentDetails`;
+
+export const getItems = (max) => {
+  let request_url;
+  if (max > 0) {
+    request_url = `${ITEMS_URL}&maxResults=${max}`;
+  } else {
+    request_url = ITEMS_URL;
+  }
+
+  return axios
+    .get(request_url, {
+      responseType: "json",
+    })
+    .then((response) =>
+      response.data.items.map((item) => ({
+        id: item.contentDetails.videoId,
+        ...extractInfo(item),
+      }))
+    );
+};
+
+export const getItem = (id) =>
+  axios
+    .get(`${ITEM_URL}&id=${id}`, {
+      responseType: "json",
+    })
+    .then((response) => {
+      const item = response.data.items[0];
+      return {
+        id: item.id,
+        ...extractInfo(item),
+      };
+    });
+
+function extractInfo(item) {
+  return {
+    title: item.snippet.title,
+    description: item.snippet.description,
+    date: item.snippet.publishedAt,
+    thumbnail: item.snippet.thumbnails[Object.keys(item.snippet.thumbnails).at(-1)].url,
+  };
+}
