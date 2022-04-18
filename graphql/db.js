@@ -71,7 +71,7 @@ const id = "UUyWiQldYO_-yeLJC0j5oq2g";
 const ITEMS_URL = `https://www.googleapis.com/youtube/v3/playlistItems?playlistId=${id}&key=${process.env.API_KEY}&part=snippet,contentDetails`;
 const ITEM_URL = `https://www.googleapis.com/youtube/v3/videos?key=${process.env.API_KEY}&part=snippet,contentDetails`;
 
-export const getItems = (max) => {
+export const getItems = async (max) => {
   let request_url;
   if (max > 0) {
     request_url = `${ITEMS_URL}&maxResults=${max}`;
@@ -79,30 +79,30 @@ export const getItems = (max) => {
     request_url = ITEMS_URL;
   }
 
-  return axios
-    .get(request_url, {
+  const items = (
+    await axios.get(request_url, {
       responseType: "json",
     })
-    .then((response) =>
-      response.data.items.map((item) => ({
-        id: item.contentDetails.videoId,
-        ...extractInfo(item),
-      }))
-    );
+  ).data.items;
+
+  return items.map((item) => ({
+    id: item.contentDetails.videoId,
+    ...extractInfo(item),
+  }));
 };
 
-export const getItem = (id) =>
-  axios
-    .get(`${ITEM_URL}&id=${id}`, {
+export const getItem = async (id) => {
+  const item = (
+    await axios.get(`${ITEM_URL}&id=${id}`, {
       responseType: "json",
     })
-    .then((response) => {
-      const item = response.data.items[0];
-      return {
-        id: item.id,
-        ...extractInfo(item),
-      };
-    });
+  ).data.items[0];
+
+  return {
+    id: item.id,
+    ...extractInfo(item),
+  };
+};
 
 function extractInfo(item) {
   const { title, description, thumbnails } = item.snippet;
