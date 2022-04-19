@@ -1,7 +1,8 @@
+import http from "http";
 import { createServer } from "@graphql-yoga/node";
 import resolvers from "./graphql/resolvers";
 
-const server = createServer({
+const yogaServer = createServer({
   schema: {
     typeDefs: `
       type Person {
@@ -40,4 +41,9 @@ const server = createServer({
   },
 });
 
-server.start();
+// yogaServer.start();
+const httpServer = http.createServer((req, res) => {
+  res.setHeader("Allow-Control-Allow-Origin", "*");
+  yogaServer.requestListener(req, res);
+});
+httpServer.listen(4000);
