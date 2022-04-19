@@ -86,9 +86,9 @@ export const getItems = async (max) => {
     })
   ).data.items;
 
-  return items.map((item) => ({
+  return items.map(async (item) => ({
     id: item.contentDetails.videoId,
-    ...extractInfo(item),
+    ...(await extractInfo(item)),
   }));
 };
 
@@ -101,17 +101,26 @@ export const getItem = async (id) => {
 
   return {
     id: item.id,
-    ...extractInfo(item),
+    ...(await extractInfo(item)),
   };
 };
 
-function extractInfo(item) {
+async function extractInfo(item) {
   const { title, description, publishedAt: date, thumbnails } = item.snippet;
+  const info = { title, description, date };
+  const thumbnail = thumbnails[Object.keys(thumbnails).at(-1)].url;
 
-  return {
-    title,
-    description,
-    date,
-    thumbnail: thumbnails[Object.keys(thumbnails).at(-1)].url,
-  };
+  if (thumbnail.endsWith("maxresdefault.jpg")) {
+    return { ...info, thumbnail };
+  } else {
+    // const maxres = "https://i.ytimg.com/vi/lqprfxoZZuc/dddefault.jpg";
+    const maxres = thumbnail.replace(/[^\/]+(?=.jpg)/, "maxresdefault");
+
+    try {
+      await axios.get(maxres);
+      return { ...info, thumbnail: maxres };
+    } catch {
+      return { ...info, thumbnail };
+    }
+  }
 }
