@@ -1,6 +1,13 @@
 import "dotenv/config";
 import axios from "axios";
 
+axios.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    return Promise.resolve(error);
+  }
+);
+
 export const people = [
   {
     id: 0,
@@ -113,14 +120,17 @@ async function extractInfo(item) {
   if (thumbnail.endsWith("maxresdefault.jpg")) {
     return { ...info, thumbnail };
   } else {
-    // const maxres = "https://i.ytimg.com/vi/lqprfxoZZuc/dddefault.jpg";
-    const maxres = thumbnail.replace(/[^\/]+(?=.jpg)/, "maxresdefault");
+    const availableRes = ["maxresdefault", "sddefault", "hqdefault", "mqdefault", "default"];
 
-    try {
-      await axios.get(maxres);
-      return { ...info, thumbnail: maxres };
-    } catch {
-      return { ...info, thumbnail };
+    for (const res of availableRes) {
+      const maxres = thumbnail.replace(/[^\/]+(?=.jpg)/, res);
+      const response = await axios.get(maxres);
+
+      if (response.request.res.statusCode == 200) {
+        return { ...info, thumbnail: maxres };
+      }
     }
+
+    return { ...info, thumbnail: "" };
   }
 }
