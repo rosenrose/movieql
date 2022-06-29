@@ -1,6 +1,12 @@
 import { ApolloServer, gql } from "apollo-server";
 
-const server = new ApolloServer({});
+const typeDefs = gql`
+  type Query {
+    text: String
+  }
+`;
+
+const server = new ApolloServer({ typeDefs });
 
 server.listen().then((args) => {
   console.log(args);
