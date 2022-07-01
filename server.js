@@ -4,11 +4,16 @@ const tweets = [
   { id: "0", text: "hello" },
   { id: "1", text: "world" },
 ];
+const users = [
+  { id: "aa", username: "nico" },
+  { id: "ab", username: "hello" },
+];
 
 const typeDefs = gql`
   type User {
     id: ID!
     username: String!
+    fullname: String!
   }
   type Tweet {
     id: ID!
@@ -19,6 +24,7 @@ const typeDefs = gql`
   type Query {
     allTweets: [Tweet!]!
     tweet(id: ID!): Tweet
+    allUsers: [User!]!
   }
   type Mutation {
     postTweet(text: String!, userId: ID!): Tweet!
@@ -28,26 +34,29 @@ const typeDefs = gql`
 
 const resolvers = {
   Query: {
-    allTweets() {
-      return tweets;
-    },
-    tweet(root, { id }) {
-      return tweets.find((tweet) => tweet.id === id);
-    },
+    allTweets: () => tweets,
+    tweet: (root, { id }) => tweets.find((tweet) => tweet.id === id),
+    allUsers: () => users,
   },
   Mutation: {
-    postTweet(_, { text, userId }) {
+    postTweet: (_, { text, userId }) => {
       const newTweet = { text, id: String(tweets.length) };
       tweets.push(newTweet);
       return newTweet;
     },
-    deleteTweet(_, { id }) {
+    deleteTweet: (_, { id }) => {
       const index = tweets.findIndex((tweet) => tweet.id === id);
       if (index < 0) {
         return false;
       }
       tweets.splice(index, 1);
       return true;
+    },
+  },
+  User: {
+    fullname: (root) => {
+      // console.log(root);
+      return root.id + root.username;
     },
   },
 };
