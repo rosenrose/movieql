@@ -1,8 +1,8 @@
 import { ApolloServer, gql } from "apollo-server";
 
 const tweets = [
-  { id: "0", text: "hello" },
-  { id: "1", text: "world" },
+  { id: "0", text: "hello", userId: "aa" },
+  { id: "1", text: "world", userId: "ab" },
 ];
 const users = [
   { id: "aa", username: "nico" },
@@ -40,7 +40,7 @@ const resolvers = {
   },
   Mutation: {
     postTweet: (_, { text, userId }) => {
-      const newTweet = { text, id: String(tweets.length) };
+      const newTweet = { text, id: String(tweets.length), userId };
       tweets.push(newTweet);
       return newTweet;
     },
@@ -58,6 +58,9 @@ const resolvers = {
       // console.log(root);
       return root.id + root.username;
     },
+  },
+  Tweet: {
+    author: ({ userId }) => users.find((user) => user.id === userId),
   },
 };
 
