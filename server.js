@@ -64,7 +64,7 @@ const typeDefs = gql`
     id: String!
     snippet: Snippet!
     contentDetails: ContentDetails!
-    thumbnailUrl: String!
+    thumbnailUrl: String
   }
   type Snippet {
     publishedAt: String!
@@ -72,7 +72,7 @@ const typeDefs = gql`
     title: String!
     description: String!
     thumbnails: Thumbnails!
-    thumbnailUrl: String!
+    thumbnailUrl: String
     channelTitle: String!
     playlistId: String
     position: Int
