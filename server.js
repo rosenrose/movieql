@@ -37,6 +37,7 @@ const typeDefs = gql`
     tweet(id: ID!): Tweet
     allUsers: [User!]!
     allMovies: Movies!
+    movie(id: String!): Movie
   }
   type Mutation {
     postTweet(text: String!, userId: ID!): Tweet!
@@ -63,6 +64,7 @@ const typeDefs = gql`
     id: String!
     snippet: Snippet!
     contentDetails: ContentDetails!
+    thumbnailUrl: String!
   }
   type Snippet {
     publishedAt: String!
@@ -70,12 +72,17 @@ const typeDefs = gql`
     title: String!
     description: String!
     thumbnails: Thumbnails!
+    thumbnailUrl: String!
     channelTitle: String!
-    playlistId: String!
-    position: Int!
-    resourceId: ResourceId!
-    videoOwnerChannelTitle: String!
-    videoOwnerChannelId: String!
+    playlistId: String
+    position: Int
+    resourceId: ResourceId
+    videoOwnerChannelTitle: String
+    videoOwnerChannelId: String
+    categoryId: String
+    liveBroadcastContent: String
+    localized: Localized
+    defaultAudioLanguage: String
   }
   type Thumbnails {
     default: Thumbnail!
@@ -94,8 +101,25 @@ const typeDefs = gql`
     videoId: String!
   }
   type ContentDetails {
-    videoId: String!
-    videoPublishedAt: String!
+    videoId: String
+    videoPublishedAt: String
+    duration: String
+    dimension: String
+    definition: String
+    caption: String
+    licensedContent: Boolean
+    projection: String
+  }
+
+  type Movie {
+    kind: String!
+    etag: String!
+    items: [Item]!
+    pageInfo: PageInfo!
+  }
+  type Localized {
+    title: String!
+    description: String!
   }
 `;
 
@@ -108,6 +132,13 @@ const resolvers = {
       axios
         .get(
           `https://www.googleapis.com/youtube/v3/playlistItems?playlistId=UUyWiQldYO_-yeLJC0j5oq2g&key=${API_KEY}&part=snippet,contentDetails&maxResults=20`,
+          { responseType: "json" }
+        )
+        .then((r) => r.data),
+    movie: (_, { id }) =>
+      axios
+        .get(
+          `https://www.googleapis.com/youtube/v3/videos?id=${id}&key=${API_KEY}&part=snippet,contentDetails`,
           { responseType: "json" }
         )
         .then((r) => r.data),
@@ -136,6 +167,12 @@ const resolvers = {
   Tweet: {
     author: ({ userId }) => users.find((user) => user.id === userId),
   },
+  Snippet: {
+    thumbnailUrl: (root) => getThumbnail(root.resourceId.videoId),
+  },
+  Item: {
+    thumbnailUrl: (root) => getThumbnail(root.id),
+  },
 };
 
 const server = new ApolloServer({
@@ -149,3 +186,11 @@ const server = new ApolloServer({
 server.listen().then((args) => {
   // console.log(args);
 });
+
+function getThumbnail(id) {
+  return axios
+    .get(`https://asia-northeast3-get-youtube-thumbnail.cloudfunctions.net/thumbnail?id=${id}`, {
+      responseType: "text",
+    })
+    .then((r) => r.data);
+}
