@@ -162,8 +162,8 @@ const server = new ApolloServer({
   },
 });
 
-server.listen().then((args) => {
-  console.log(process.env);
+server.listen({ port: process.env.PORT }).then((args) => {
+  // console.log(process.env);
 });
 
 function getThumbnail(id) {
