@@ -36,7 +36,7 @@ const typeDefs = gql`
     allTweets: [Tweet!]!
     tweet(id: ID!): Tweet
     allUsers: [User!]!
-    allMovies: Movies!
+    allMovies(id: String!): [Movie]!
     movie(id: String!): Movie
   }
   type Mutation {
@@ -47,24 +47,13 @@ const typeDefs = gql`
     deleteTweet(id: ID!): Boolean!
   }
 
-  type Movies {
-    kind: String!
-    etag: String!
-    nextPageToken: String!
-    items: [Item]!
-    pageInfo: PageInfo!
-  }
-  type PageInfo {
-    totalResults: Int!
-    resultsPerPage: Int!
-  }
-  type Item {
+  type Movie {
     kind: String!
     etag: String!
     id: String!
     snippet: Snippet!
     contentDetails: ContentDetails!
-    thumbnailUrl: String
+    thumbnailUrl: String!
   }
   type Snippet {
     publishedAt: String!
@@ -72,7 +61,6 @@ const typeDefs = gql`
     title: String!
     description: String!
     thumbnails: Thumbnails!
-    thumbnailUrl: String
     channelTitle: String!
     playlistId: String
     position: Int
@@ -110,13 +98,6 @@ const typeDefs = gql`
     licensedContent: Boolean
     projection: String
   }
-
-  type Movie {
-    kind: String!
-    etag: String!
-    items: [Item]!
-    pageInfo: PageInfo!
-  }
   type Localized {
     title: String!
     description: String!
@@ -128,20 +109,20 @@ const resolvers = {
     allTweets: () => tweets,
     tweet: (root, { id }) => tweets.find((tweet) => tweet.id === id),
     allUsers: () => users,
-    allMovies: () =>
+    allMovies: (_, { id }) =>
       axios
         .get(
-          `https://www.googleapis.com/youtube/v3/playlistItems?playlistId=UUyWiQldYO_-yeLJC0j5oq2g&key=${API_KEY}&part=snippet,contentDetails&maxResults=20`,
+          `https://www.googleapis.com/youtube/v3/playlistItems?playlistId=${id}&key=${API_KEY}&part=snippet,contentDetails&maxResults=20`,
           { responseType: "json" }
         )
-        .then((r) => r.data),
+        .then((r) => r.data.items),
     movie: (_, { id }) =>
       axios
         .get(
           `https://www.googleapis.com/youtube/v3/videos?id=${id}&key=${API_KEY}&part=snippet,contentDetails`,
           { responseType: "json" }
         )
-        .then((r) => r.data),
+        .then((r) => r.data.items[0]),
   },
   Mutation: {
     postTweet: (_, { text, userId }) => {
@@ -167,11 +148,10 @@ const resolvers = {
   Tweet: {
     author: ({ userId }) => users.find((user) => user.id === userId),
   },
-  Snippet: {
-    thumbnailUrl: (root) => getThumbnail(root.resourceId.videoId),
-  },
-  Item: {
-    thumbnailUrl: (root) => getThumbnail(root.id),
+  Movie: {
+    id: (root) => (root.id.length === 11 ? root.id : root.contentDetails.videoId),
+    thumbnailUrl: (root) =>
+      getThumbnail(root.id.length === 11 ? root.id : root.contentDetails.videoId),
   },
 };
 
