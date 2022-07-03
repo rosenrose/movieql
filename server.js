@@ -36,7 +36,7 @@ const typeDefs = gql`
     allTweets: [Tweet!]!
     tweet(id: ID!): Tweet
     allUsers: [User!]!
-    allMovies(id: String!): [Movie]!
+    allMovies(id: String!): [Movie]
     movie(id: String!): Movie
   }
   type Mutation {
