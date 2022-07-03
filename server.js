@@ -1,6 +1,5 @@
 import { ApolloServer, gql } from "apollo-server";
 import axios from "axios";
-import "dotenv/config";
 
 const API_KEY = process.env.API_KEY;
 
@@ -164,7 +163,7 @@ const server = new ApolloServer({
 });
 
 server.listen().then((args) => {
-  // console.log(args);
+  console.log(args);
 });
 
 function getThumbnail(id) {
