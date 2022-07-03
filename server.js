@@ -163,7 +163,7 @@ const server = new ApolloServer({
 });
 
 server.listen().then((args) => {
-  console.log(args);
+  console.log(procee.env);
 });
 
 function getThumbnail(id) {
